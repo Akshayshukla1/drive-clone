@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
+  const URL="http://192.168.1.2:3000/"
   const [directoryItems, setDirectoryItems] = useState([]);
   const [progress, setProgresss] = useState(0);
   const [newFileName, setNewFileName] = useState("");
 
   async function getDirectoryItems() {
-    const response = await fetch("http://192.168.1.2:3000/");
+    const response = await fetch(URL);
     const data = await response.json();
     console.log(data);
     setDirectoryItems(data);
@@ -20,7 +21,7 @@ function App() {
   async function uploadFile(e) {
     const file = e.target.files[0];
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://192.168.1.2:3000", true);
+    xhr.open("POST", URL, true);
     xhr.setRequestHeader("filename", file.name);
     xhr.addEventListener("load", () => {
       console.log(xhr.response);
@@ -42,7 +43,7 @@ function App() {
   }
 
   async function saveFilename(oldFilename) {
-  const response = await fetch("http://192.168.1.2:3000/", {
+  const response = await fetch(URL, {
     method: "PATCH",
     body: JSON.stringify({ oldFilename, newFileName }),
   });
@@ -55,7 +56,7 @@ function App() {
 
   async function handleDelete(filename) {
     console.log(filename);
-    const response = await fetch(`http://192.168.1.2:3000/delete`, {
+    const response = await fetch(URL, {
       method: "DELETE",
       body: filename,
     });
@@ -77,8 +78,8 @@ function App() {
       {directoryItems.map((item, i) => (
         <div key={i}>
           {item}
-          <a href={`http://192.168.1.2:3000/${item}?action=open`}>Open</a>
-          <a href={`http://192.168.1.2:3000/${item}?action=download`}>
+          <a href={`${URL}/${item}?action=open`}>Open</a>
+          <a href={`${URL}/${item}?action=download`}>
             Download
           </a>
           <button
