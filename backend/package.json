@@ -1,6 +1,7 @@
 {
     "type": "module",
     "dependencies": {
+        "express": "^5.2.1",
         "mime-types": "^3.0.2"
     }
 }

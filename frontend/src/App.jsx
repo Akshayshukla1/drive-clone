@@ -78,8 +78,8 @@ function App() {
       {directoryItems.map((item, i) => (
         <div key={i}>
           {item}
-          <a href={`${URL}/${item}?action=open`}>Open</a>
-          <a href={`${URL}/${item}?action=download`}>
+          <a href={`${URL}${item}?action=open`}>Open</a>
+          <a href={`${URL}${item}?action=download`}>
             Download
           </a>
           <button
