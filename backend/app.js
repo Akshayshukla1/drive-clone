@@ -6,6 +6,7 @@ const app = express();
 
 app.use(express.json());
 
+
 // Enabling CORS
 app.use((req, res, next) => {
   res.set({
@@ -16,6 +17,14 @@ app.use((req, res, next) => {
   next();
 });
 
+app.post("/:filename",(req,res,next)=>{
+console.log(req.params.filename)
+const writeStream=createWriteStream(`./storage/${req.params.filename}`)
+req.pipe(writeStream)
+req.on("end",()=>{
+  res.json({message:"File uploaded"})
+})
+})
 // Read
 app.get("/", async (req, res) => {
   const filesList = await readdir("./storage");
