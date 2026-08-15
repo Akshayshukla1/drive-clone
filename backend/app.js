@@ -1,6 +1,7 @@
 import express from "express";
 import { createWriteStream } from "fs";
-import { readdir, rename, rm } from "fs/promises";
+import { readdir, rename, rm, stat } from "fs/promises";
+import cors from "cors";
 
 const app = express();
 
@@ -8,14 +9,16 @@ app.use(express.json());
 
 
 // Enabling CORS
-app.use((req, res, next) => {
-  res.set({
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "*",
-    "Access-Control-Allow-Headers": "*",
-  });
-  next();
-});
+// app.use((req, res, next) => {
+//   res.set({
+//     "Access-Control-Allow-Origin": "*",
+//     "Access-Control-Allow-Methods": "*",
+//     "Access-Control-Allow-Headers": "*",
+//   });
+//   next();
+// });
+
+app.use(cors());
 
 app.post("/:filename",(req,res,next)=>{
 console.log(req.params.filename)
@@ -26,24 +29,53 @@ req.on("end",()=>{
 })
 })
 // Read
-app.get("/", async (req, res) => {
+// /directory
+app.get("/directory", async (req, res) => {
   const filesList = await readdir("./storage");
-  res.json(filesList);
+  const resData = [];
+
+  for (const item of filesList) {
+    const stats = await stat(`./storage/${item}`);
+
+    resData.push({
+      name: item,
+      isDirectory: stats.isDirectory(),
+    });
+  }
+
+  res.json(resData);
 });
 
+// /directory/:dirname
+app.get("/directory/:dirname", async (req, res) => {
+  const { dirname } = req.params;
+
+  const fullDirPath = `./storage/${dirname}`;
+  const filesList = await readdir(fullDirPath);
+  const resData = [];
+
+  for (const item of filesList) {
+    const stats = await stat(`${fullDirPath}/${item}`);
+
+    resData.push({
+      name: item,
+      isDirectory: stats.isDirectory(),
+    });
+  }
+
+  res.json(resData);
+});
 
 //create
-app.post("/:filename",(req,res)=>{
-  // console.log(req.params.filename)
-  const filename=req.params.filename
+app.post("/files/:filename", (req, res) => {
+  const writeStream = createWriteStream(`./storage/${filename}`);
+  req.pipe(writeStream);
+  req.on("end", () => {
+    res.json({ message: "File uploaded" });
+  });
+});
 
-  const writeStream=createWriteStream(`./storage/${filename}`)
-  req.pipe(writeStream)
-  req.on("end",()=>{
-    res.json({message:'File uploaded'})
-  })
-})
-app.get("/:filename", (req, res) => {
+app.get("/files/:filename", (req, res) => {
   const { filename } = req.params;
   if (req.query.action === "download") {
     res.set("Content-Disposition", "attachment");
@@ -52,14 +84,14 @@ app.get("/:filename", (req, res) => {
 });
 
 // Update
-app.patch("/:filename", async (req, res) => {
+app.patch("/files/:filename", async (req, res) => {
   const { filename } = req.params;
   await rename(`./storage/${filename}`, `./storage/${req.body.newFilename}`);
   res.json({ message: "Renamed" });
 });
 
 // Delete
-app.delete("/:filename", async (req, res) => {
+app.delete("/files/:filename", async (req, res) => {
   const { filename } = req.params;
   const filePath = `./storage/${filename}`;
   try {
