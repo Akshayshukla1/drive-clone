@@ -2,6 +2,7 @@ import express from "express";
 import { createWriteStream } from "fs";
 import { readdir, rename, rm, stat } from "fs/promises";
 import cors from "cors";
+import { mkdir } from "fs/promises";
 
 const app = express();
 
@@ -20,6 +21,23 @@ app.get("/directory/?*", async (req, res) => {
   }
   res.json(resData);
 });
+
+
+app.post("/directory/*",async(req,res)=>{
+  const { 0: dirname } = req.params;
+console.log(dirname)
+try{
+  await mkdir(`./storage/${dirname}`)
+ res.json({message:"Directory Created!"})
+}catch(err){
+  res.json({err:err.message})
+}
+})
+
+
+
+
+
 
 // Create
 app.post("/files/*", (req, res) => {

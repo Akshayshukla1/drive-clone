@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 function DirectoryView() {
-  const BASE_URL = "http://192.168.0.105:4000";
+  const BASE_URL = "http://localhost:4000";
   const [directoryItems, setDirectoryItems] = useState([]);
   const [progress, setProgress] = useState(0);
   const [newFilename, setNewFilename] = useState("");
+  const [newDirName, setNewDirName] = useState("");
   const { "*": dirPath } = useParams();
-  console.log(dirPath);
+  // console.log(dirPath);
 
   async function getDirectoryItems() {
     const response = await fetch(`${BASE_URL}/directory/${dirPath}`);
@@ -57,12 +58,24 @@ function DirectoryView() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ newFilename: `${dirPath}/${newFilename}` }),
-      }
+      },
     );
     const data = await response.text();
     console.log(data);
     setNewFilename("");
     getDirectoryItems();
+  }
+  
+  async function handleCreateDirectory(e) {
+    e.preventDefault();
+    // console.log(`${BASE_URL}/directory${dirPath?"/"+dirPath:""}/${newDirName}`)
+    const url = `${BASE_URL}/directory${dirPath ? "/" + dirPath : ""}/${newDirName}`;
+    const response = await fetch(url, {
+      method: "POST",
+    });
+    await response.json();
+    getDirectoryItems()
+    setNewDirName(" ")
   }
 
   return (
@@ -75,6 +88,14 @@ function DirectoryView() {
         value={newFilename}
       />
       <p>Progress: {progress}%</p>
+      <form
+        onSubmit={handleCreateDirectory}
+        value={newDirName}
+        onChange={(e) => setNewDirName(e.target.value)}
+      >
+        <input type="text" />
+        <button>Create Folder</button>
+      </form>
       {directoryItems.map(({ name, isDirectory }, i) => (
         <div key={i}>
           {name} {isDirectory && <Link to={`./${name}`}>Open</Link>}
