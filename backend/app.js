@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/directory", directoryRoutes);
-app.use("/files", fileRoutes);
+app.use("/file", fileRoutes);
 
 app.listen(4000, () => {
   console.log(`Server Started`);
