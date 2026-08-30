@@ -1,26 +1,31 @@
 import express from "express";
 import { mkdir, readdir, stat } from "fs/promises";
 import path from "path";
+import directoriesData from "../directoriesDb.json" with { type: "json" };
+import filesData from "../filesDB.json" with { type: "json" };
 
 const router = express.Router();
 
 // Read
-router.get("/?*", async (req, res) => {
-  const dirname = path.join("/", req.params[0]);
-  const fullDirPath = `./storage/${dirname ? dirname : ""}`;
-  console.log(fullDirPath);
-  try {
-    const filesList = await readdir(fullDirPath);
-    const resData = [];
-    for (const item of filesList) {
-      const stats = await stat(`${fullDirPath}/${item}`);
-      resData.push({ name: item, isDirectory: stats.isDirectory() });
-    }
-    res.json(resData);
-  } catch (err) {
-    res.json({ error: err.message });
+router.get("/:id?", async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    const directoryData = directoriesData[0];
+    const files = directoryData.files.map((fileId) =>
+      filesData.find((file) => file.id === fileId),
+    );
+
+    res.json({...directoryData,files});
+  } else {
+    const directoryData = directoriesData.find((folder) => folder.id == id);
+
+    res.json(directoryData);
   }
 });
+
+
+
+
 
 router.post("/*", async (req, res) => {
   const dirname = path.join("/", req.params[0]);

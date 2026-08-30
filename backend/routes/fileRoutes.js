@@ -2,42 +2,45 @@ import express from "express";
 import { createWriteStream,  } from "fs";
 import { rename, rm ,writeFile} from "fs/promises";
 import path from "path";
-import filesData from '../fileDb.json' with {type:"json"}
+import filesData from '../filesDB.json' with {type:"json"}
+import directoriesData from "../directoriesDb.json" with { type: "json" };
+import console from "console";
 
-filesData.push({name:"hiiiiiiiii"})
-console.log(filesData)
 
 
 const router = express.Router();
 
 // Create
 router.post("/:filename", (req, res) => {
-  const {filename} = req.params
-  const id=crypto.randomUUID()
-  const extension=path.extname(filename)
-  const fullFileName=`${id}.${extension}`
+  const { filename } = req.params;
+  const parentDirId  = req.headers.parentdirid||directoriesData[0].id;
+  const id = crypto.randomUUID();
+  const extension = path.extname(filename);
+  const fullFileName = `${id}${extension}`;
+  console.log(fullFileName)
   const writeStream = createWriteStream(`./storage/${fullFileName}`);
   req.pipe(writeStream);
-  
-  req.on("end", async() => {
+  req.on("end", async () => {
     filesData.push({
       id,
       extension,
-      name:filename
+      name: filename,
+      parentDirId
     })
-    await writeFile('./fileDb.json',JSON.stringify(filesData))
+    const parentDirData=directoriesData.find((directoryData)=>directoryData.id==parentDirId)
+    console.log(filesData);
+    parentDirData.files.push(id)
+    await writeFile('./filesDB.json', JSON.stringify(filesData))
+    await writeFile('./directoriesDb.json', JSON.stringify(directoriesData))
     res.json({ message: "File Uploaded" });
   });
 });
 
 // Path Traversal Vulnerability
 router.get("/:id", (req, res) => {
-  // const filePath = path.join("/", req.params[0]);
-  const{id}=req.params
-  console.log(id)
-  // const fileData=filesData.find(({file})=>file.id===id)
-  const fileData = filesData.find((file) => file.id === id);
-  console.log(fileData)
+  const {id} = req.params
+  const fileData = filesData.find((file) => file.id === id)
+  // console.log(id,fileData)
   if (req.query.action === "download") {
     res.set("Content-Disposition", "attachment");
   }
@@ -49,17 +52,35 @@ router.get("/:id", (req, res) => {
 });
 
 // Update
-router.patch("/*", async (req, res) => {
-  const { 0: filePath } = req.params;
-  await rename(`./storage/${filePath}`, `./storage/${req.body.newFilename}`);
+router.patch("/:id", async (req, res) => {
+  const {id}=req.params
+  console.log(id)
+  const fileData = filesData.find((file) => file.id === id)
+  console.log(fileData)
+  console.log(req.body.newFilename)
+  fileData.name=req.body.newFilename
+  await writeFile('./filesDB.json', JSON.stringify(filesData))
+  
+  
   res.json({ message: "Renamed" });
 });
 
 // Delete
-router.delete("/*", async (req, res) => {
-  const { 0: filePath } = req.params;
+router.delete("/:id", async (req, res) => {
+  console.log("delete")
+  const {id}=req.params
+  console.log(id)
+  const fileIndex = filesData.findIndex((file) => file.id === id)
+  const fileData = filesData[fileIndex]
+  console.log(fileData)
+
   try {
-    await rm(`./storage/${filePath}`, { recursive: true });
+    await rm(`./storage/${id}${fileData.extension}`, { recursive: true });
+    filesData.splice(fileIndex,1)
+    const parentDirData=directoriesData.find((directoryData)=>directoryData.id===fileData.parentDirId)
+    parentDirData.files=parentDirData.files.filter((fileId)=>fileId!==id)
+    await writeFile('./filesDB.json', JSON.stringify(filesData))
+    await writeFile('./directoriesDb.json', JSON.stringify(directoriesData))
     res.json({ message: "File Deleted Successfully" });
   } catch (err) {
     res.status(404).json({ message: err.message });
