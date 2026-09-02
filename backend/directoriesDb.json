@@ -8,10 +8,12 @@
             "797379a8-1faa-4448-91e3-da1da2dd4d70",
             "b253298d-02f7-4c67-bed2-95b89008aea9",
             "350d2280-fb3a-4687-9753-50839c0c0aa4",
-            "2dc34bae-694e-4580-a9d1-3f52f4966fa9"
+            "2dc34bae-694e-4580-a9d1-3f52f4966fa9",
+            "83dbc556-57a4-439b-bac7-7838070c54a8"
         ],
         "directories": [
-            "00308f47-1514-4ead-a29c-1eaaed559c96"
+            "00308f47-1514-4ead-a29c-1eaaed559c96",
+            "bab43dde-cc17-40a6-bdf4-6b7f0c524942"
         ]
     },
     {
@@ -42,6 +44,13 @@
         "id": "ff8bd21f-aabe-493d-acad-efabfefe0d44",
         "name": "hj",
         "parentDirId": "591dae86-4ac4-4882-b139-cc1b858dec10",
+        "files": [],
+        "directories": []
+    },
+    {
+        "id": "bab43dde-cc17-40a6-bdf4-6b7f0c524942",
+        "name": "New Folder",
+        "parentDirId": "a965303d-2899-48f9-902b-bd1992d06778",
         "files": [],
         "directories": []
     }
