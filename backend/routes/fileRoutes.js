@@ -30,7 +30,6 @@ router.post("/:parentDirId?", (req, res, next) => {
     try {
       await writeFile("./filesDB.json", JSON.stringify(filesData));
       await writeFile("./directoriesDB.json", JSON.stringify(directoriesData));
-      console.log(object);
       return res.status(201).json({ message: "File Uploaded" });
     } catch(err) {
       next(err)
