@@ -22,7 +22,8 @@ app.use("/file", checkAuth, fileRoutes);
 app.use("/user", userRoutes);
 
 app.use((err, req, res, next) => {
-  res.status(err.status || 500).json({ message: "Something went wrong!" });
+  console.log(err);
+  res.status(err.status || 500).json({ message: "Something went wrong!!" });
 });
 
 app.listen(4000, () => {

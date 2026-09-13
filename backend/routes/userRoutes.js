@@ -2,9 +2,9 @@ import express from "express";
 import { writeFile } from "fs/promises";
 import directoriesData from '../directoriesDB.json' with {type: "json"}
 import usersData from '../usersDB.json' with {type: "json"}
+import checkAuth from "../auth.js";
 
 const router = express.Router();
-
 
 router.post('/register', async (req, res, next) => {
   const {name, email, password} = req.body
@@ -61,5 +61,16 @@ router.post('/login', async (req, res, next) => {
   res.json({message: 'logged in'})
 })
 
+router.get('/', checkAuth, (req, res) => {
+  res.status(200).json({
+    name: req.user.name,
+    email: req.user.email,
+  })
+})
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('uid')
+  res.status(204).end()
+})
 
 export default router;
